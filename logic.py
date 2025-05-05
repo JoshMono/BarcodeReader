@@ -38,27 +38,48 @@ class BarcodeReader:
         barcode_lines = []
         current_line_list = []
 
+        line_switch = False
         
-        for x in range(starting_index, self.dimensions[0]):
+        for x in range(starting_index, self.dimensions[0] - starting_index):
             
             if self.pixels[x, self.dimensions[1]/2 ] == 0:
-                if len(current_line_list) == scale:
-                    barcode_lines.append(((round(len(current_line_list)/scale)), 255))
+                if line_switch:
                     current_line_list = []
-                    
+                    line_switch = False
+
                 current_line_list.append(x)
+
+                if len(current_line_list) == scale:
+                    print(len(current_line_list)/scale)
+                    barcode_lines.append(((round(len(current_line_list)/scale)), 0))
+                    current_line_list = []
+                    line_switch = False
+
+
+
+                    
 
                 
 
             elif self.pixels[x, self.dimensions[1]/2] == 255:
-               
-                if len(current_line_list) == scale:
-                    barcode_lines.append(((round(len(current_line_list)/scale)), 0))
+                
+                if not line_switch:
                     current_line_list = []
-                    
-                current_line_list.append(x)
+                    line_switch = True
 
-        # print(barcode_lines)
+
+                current_line_list.append(x)
+               
+
+
+
+                if len(current_line_list) == scale:
+                    barcode_lines.append(((round(len(current_line_list)/scale)), 255))
+                    current_line_list = []
+                    line_switch = True
+                    
+
+        print(barcode_lines)
         self.sort_barcode_list(barcode_lines)
 
 
@@ -114,15 +135,20 @@ class BarcodeReader:
     ###
     @staticmethod
     def remove_middle_pattern(list):
-        pattern = [(1, 255),(1, 0),(1, 255),(1, 0),(1, 255)]
-        pattern_len = len(pattern)
-        i = 0
-        while i <= len(list) - pattern_len:
-            if list[i:i+pattern_len] == pattern:
-                # Split the list at the pattern
-                return list[:i], list[i+pattern_len:]
-            i += 1
-        return list, []
+        
+        mid_index = len(list) // 2
+
+        left = list[:mid_index]
+        right = list[mid_index+1:]
+        left.reverse()
+
+        for i in range(1):
+            del left[i]
+
+        for i in range(1):
+            del right[i]
+        left.reverse()
+        return left, right
     
     @staticmethod
     def remove_pattern(list):
@@ -136,11 +162,10 @@ class BarcodeReader:
         # print(barcode_list)
         left, right = self.remove_middle_pattern(barcode_list)
 
-        print(f"{left} \n\n\n {right} \n\n\n")
-
+        # print(f"{left} \n\n\n {right} \n\n\n")
+        
         left = self.remove_pattern(left)
         right = self.remove_pattern(list(reversed(right)))
-        
         self.translate_lines(left, list(reversed(right)))
 
         
