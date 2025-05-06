@@ -1,13 +1,14 @@
 import barcode
 from barcode.writer import ImageWriter
-import random
+from random import randint
 from PIL import Image
 
 
 
 class BarcodeReader:
     def __init__(self):        
-        self.barcode_img = Image.open('barcode_image.png').convert('L')
+        self.barcode_img = Image.open('barcode_image_test_1.png').convert('L')
+
         self.barcode_img.show()
 
         self.read_image()
@@ -36,42 +37,37 @@ class BarcodeReader:
 
         line_switch = False
         
-        for x in range(starting_index + (scale * 3), self.dimensions[0] - starting_index - (scale * 3)):
+        while len(barcode_lines) != 89:
             
-            if self.pixels[x, self.dimensions[1]/2 ] == 0:
-                if line_switch:
-                    current_line_list = []
-                    line_switch = False
+            for x in range(starting_index + (scale * 3), self.dimensions[0] - starting_index - (scale * 3)):
+                
+                if self.pixels[x, self.dimensions[1]/2 ] == 0:
+                    if line_switch:
+                        current_line_list = []
+                        line_switch = False
 
-                current_line_list.append(x)
+                    current_line_list.append(x)
 
-                if len(current_line_list) == scale:
-                    barcode_lines.append(((round(len(current_line_list)/scale)), 0))
-                    current_line_list = []
-                    line_switch = False
+                    if len(current_line_list) == scale:
+                        barcode_lines.append(((round(len(current_line_list)/scale)), 0))
+                        current_line_list = []
+                        line_switch = False
 
-
-
+                elif self.pixels[x, self.dimensions[1]/2] == 255:
                     
-
-                
-
-            elif self.pixels[x, self.dimensions[1]/2] == 255:
-                
-                if not line_switch:
-                    current_line_list = []
-                    line_switch = True
+                    if not line_switch:
+                        current_line_list = []
+                        line_switch = True
 
 
-                current_line_list.append(x)
-               
+                    current_line_list.append(x)
+                    
+                    if len(current_line_list) == scale:
+                        barcode_lines.append(((round(len(current_line_list)/scale)), 255))
+                        current_line_list = []
+                        line_switch = True
 
-
-
-                if len(current_line_list) == scale:
-                    barcode_lines.append(((round(len(current_line_list)/scale)), 255))
-                    current_line_list = []
-                    line_switch = True
+            
 
         self.sort_barcode_list(barcode_lines)
 
