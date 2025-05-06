@@ -7,9 +7,19 @@ from PIL import Image
 
 class BarcodeReader:
     def __init__(self):        
-        self.barcode_img = Image.open('barcode_image_test_1.png').convert('L')
 
-        self.barcode_img.show()
+        number = randint(1, 3)
+    
+        match number:
+            case 1:
+                self.barcode_img = Image.open('barcode_image_test_1.png').convert('L')
+            case 2:
+                self.barcode_img = Image.open('barcode_image_test_2.png').convert('L')
+            case 3:
+                self.barcode_img = Image.open('barcode_image_test_3.png').convert('L')
+
+
+        # self.barcode_img.show()
 
         self.read_image()
         self.read_barcode()
