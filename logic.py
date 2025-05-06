@@ -19,7 +19,7 @@ class BarcodeReader:
                 self.barcode_img = Image.open('barcode_image_test_3.png').convert('L')
 
 
-        # self.barcode_img.show()
+        self.barcode_img.show()
 
         self.read_image()
         self.read_barcode()
