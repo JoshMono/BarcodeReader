@@ -6,20 +6,53 @@ import unittest
 class TestBarcode(unittest.TestCase):
     def test_validate_low_dimensions(self):
         img = Image.open('barcode_image_test_1.png')
-        self.assertTrue(BarcodeReader(img))
+        barcode_reader = BarcodeReader(img, True)
+
+        if barcode_reader.read_barcode() == False:
+            self.fail()
 
     def test_validate_medium_dimensions(self):
         img = Image.open('barcode_image_test_2.png')
-        self.assertTrue(BarcodeReader(img))
+        barcode_reader = BarcodeReader(img, True)
+    
+        if barcode_reader.read_barcode() == False:
+            self.fail()
 
     def test_validate_high_dimensions(self):
         img = Image.open('barcode_image_test_3.png')
-        self.assertTrue(BarcodeReader(img))
+        barcode_reader = BarcodeReader(img, True)
+        
+        if barcode_reader.read_barcode() == False:
+            self.fail()
 
     def test_validate_transparent_background(self):
         img = Image.open('barcode_image_test_4.png')
-        self.assertTrue(BarcodeReader(img))
+        barcode_reader = BarcodeReader(img, True)
+        
+        if barcode_reader.read_barcode() == False:
+            self.fail()
 
+    def test_validate_different_colours(self):
+        img = Image.open('barcode_image_test_5.png')
+        barcode_reader = BarcodeReader(img, True)
+        print(barcode_reader.read_barcode())
+        if barcode_reader.read_barcode() == False:
+            self.fail()
+
+    def test_validate_gradient(self):
+        img = Image.open('barcode_image_test_6.png')
+        barcode_reader = BarcodeReader(img, True)
+        
+        if barcode_reader.read_barcode() == False:
+            self.fail()
+
+    def test_validate_gray(self):
+        img = Image.open('barcode_image_test_7.png')
+        barcode_reader = BarcodeReader(img, True)
+        
+        if barcode_reader.read_barcode() == False:
+            self.fail()
+        
 if __name__ == '__main__':
     
     runner = unittest.TextTestRunner()
@@ -30,7 +63,9 @@ if __name__ == '__main__':
 
     if result.wasSuccessful():
         print("All tests passed!")
-        barcode_reader = BarcodeReader()
+        img = Image.open('barcode_image_test_4.png')
+        barcode_reader = BarcodeReader(img)
+        print(barcode_reader.read_barcode())
     else:
         print("Some tests failed.")
         if result.failures:

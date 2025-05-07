@@ -6,32 +6,22 @@ from PIL import Image, ImageDraw, ImageEnhance
 
 
 class BarcodeReader:
-    def __init__(self ,img=None):        
+    def __init__(self ,img=None, test=False):        
 
-        number = randint(1, 3)
+        self.test = test
     
-        # match number:
-        #     case 1:
-        #         barcode_img = Image.open('barcode_image_test_1.png').convert('L')
-        #     case 2:
-        #         barcode_img = Image.open('barcode_image_test_2.png').convert('L')
-        #     case _:
-        #         barcode_img = Image.open('barcode_image_test_3.png').convert('L')
-        
         if img == None:
-            barcode_img = Image.open('barcode_image_test_1.png').convert('L')
+            self.plain_barcode_img = Image.open('barcode_image_test_2.png').convert('RGB')
+            self.barcode_img = Image.open('barcode_image_test_2.png').convert('L')
         else:
-            barcode_img = img.convert('L')
+            self.plain_barcode_img = img.convert('RGB')
+            self.barcode_img = img.convert('L')
 
-
-        threshold = 128
-        self.barcode_img = barcode_img.point(lambda x: 255 if x > threshold else 0, '1')
-        # enhancer = ImageEnhance.Contrast(barcode_img)
-        # self.barcode_img = enhancer.enhance(3)
-        # self.barcode_img.show()
+        threshold = 200
+        self.barcode_img = self.barcode_img.point(lambda x: 255 if x > threshold else 0, 'L')
 
         self.read_image()
-        self.read_barcode(barcode_img)
+
         
 
     def read_image(self):
@@ -46,17 +36,15 @@ class BarcodeReader:
     ###
 
 
-    def read_barcode(self, barcode_img):
+    def read_barcode(self):
         start_pixels = self.get_start()
         end_pixels = self.get_end()
 
-        try:
-            starting_index = start_pixels[0][0]
-            ending_index = start_pixels[0][0]
-            scale = self.get_scale(start_pixels)
-        except Exception as e:
-            print(f"{e} - Couldn't Read Line")
-            exit()
+       
+        starting_index = start_pixels[0][0]
+        ending_index = end_pixels[0][0]
+        scale = self.get_scale(start_pixels)
+    
         barcode_lines = []
         current_line_list = []
         current_line_positions = []
@@ -64,52 +52,50 @@ class BarcodeReader:
         line_switch = False
         
         # while len(barcode_lines) != 89:
-        draw = ImageDraw.Draw(barcode_img)
-        try: 
-            for x in range(starting_index + (scale * 3), self.dimensions[0] - ending_index - (scale * 3)):
-                
-                if self.pixels[x, self.dimensions[1]/2 ] == 0:
-                    if line_switch:
-                        if len(current_line_list) > round(scale * .75):
-                            barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 255))
-                            draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="red", width=3)
-                        current_line_list = []
-                        line_switch = False
-
-                    current_line_list.append(x)
-                    
-
-                    if len(current_line_list) == scale:
-                        barcode_lines.append(((round(len(current_line_list)/scale)), 0))
-                        draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="red", width=3)
-                        
-                        current_line_list = []
-                        line_switch = False
-
-                elif self.pixels[x, self.dimensions[1]/2] == 255:
-                    
-                    if not line_switch:
-                        if len(current_line_list) > round(scale * .75):
-                            barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 0))
-                            draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="blue", width=3)
-                        current_line_list = []
-                        line_switch = True
-
-
-                    current_line_list.append(x)
-                    
-                    if len(current_line_list) == scale:
-                        draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="blue", width=3)
-                        
-                        barcode_lines.append(((round(len(current_line_list)/scale)), 255))
-                        current_line_list = []
-                        line_switch = True
-        except Exception as e:
-            print(f"{e} - Couldn't Read Line")
-            exit()
+        draw = ImageDraw.Draw(self.plain_barcode_img)
+   
+        for x in range(starting_index + (scale * 3), self.dimensions[0] - ending_index - (scale * 3)):
             
-        barcode_img.show()
-        self.sort_barcode_list(barcode_lines)
+            if self.pixels[x, self.dimensions[1]/2 ] == 0:
+                if line_switch:
+                    if len(current_line_list) > round(scale * .75):
+                        barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 255))
+                        draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="blue", width=3)
+                    current_line_list = []
+                    line_switch = False
+
+                current_line_list.append(x)
+                
+
+                if len(current_line_list) == scale:
+                    barcode_lines.append(((round(len(current_line_list)/scale)), 0))
+                    draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="red", width=3)
+                    
+                    current_line_list = []
+                    line_switch = False
+
+            elif self.pixels[x, self.dimensions[1]/2] == 255:
+                
+                if not line_switch:
+                    if len(current_line_list) > round(scale * .75):
+                        barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 0))
+                        draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="red", width=3)
+                    current_line_list = []
+                    line_switch = True
+
+
+                current_line_list.append(x)
+                
+                if len(current_line_list) == scale:
+                    draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="blue", width=3)
+                    
+                    barcode_lines.append(((round(len(current_line_list)/scale)), 255))
+                    current_line_list = []
+                    line_switch = True
+       
+        if not self.test:
+            self.plain_barcode_img.show()
+        return self.sort_barcode_list(barcode_lines)
 
 
 
@@ -132,7 +118,7 @@ class BarcodeReader:
         white_line = []
 
         if self.dimensions[0] > 4000:
-            accuarcy_error = 20
+            accuarcy_error = 15
         elif self.dimensions[0] > 2000:
             accuarcy_error = 10
         elif self.dimensions[0] > 1500:
@@ -199,11 +185,13 @@ class BarcodeReader:
         white_line = []
 
         if self.dimensions[0] > 4000:
-            accuarcy_error = 20
+            accuarcy_error = 15
         elif self.dimensions[0] > 2000:
             accuarcy_error = 10
+        elif self.dimensions[0] > 1500:
+            accuarcy_error = 7
         elif self.dimensions[0] > 1000:
-            accuarcy_error = 5
+            accuarcy_error = 4
         elif self.dimensions[0] > 700:
             accuarcy_error = 3
         else:
@@ -302,9 +290,8 @@ class BarcodeReader:
         left, right = self.remove_middle_pattern(barcode_list)
         code = self.translate_lines(left, right)
         if self.check_sum(code):
-            print(f"{code} is the code")
-        else:
-            print("Wrong")
+            return code
+        return False
 
     @staticmethod
     def check_sum(code):
@@ -364,44 +351,40 @@ class BarcodeReader:
         i = 0
         current_line = []
         code = ""
-        try:
-            for line in left:
-                if i == 7:
-                    
-                    code += str(codes_left[tuple(current_line)])
-                    current_line = [line]
-                    i =+ line[0]
-                    
-                else:
-                    current_line.append(line)
-                    i += line[0]
-                    
-            code += str(codes_left[tuple(current_line)])
-        except Exception as e:
-            print(f"{e} - Couldn't decode left side")
-            exit()
+    
+        for line in left:
+            if i == 7:
+                
+                code += str(codes_left[tuple(current_line)])
+                current_line = [line]
+                i =+ line[0]
+                
+            else:
+                current_line.append(line)
+                i += line[0]
+                
+        code += str(codes_left[tuple(current_line)])
+        
         current_line= []
         
 
 
         i = 0
         current_line = []
-        try:
-            for line in right:
-                if i == 7:
-                    current_line
-                    code += str(codes_right[tuple(current_line)])
-                    current_line = [line]
-                    i =+ line[0]
-                    
-                else:
-                    current_line.append(line)
-                    i += line[0]
-                    
-            code += str(codes_right[tuple(current_line)])
-        except Exception as e:
-            print(f"{e} - Couldn't decode right side")
-            exit()
+        
+        for line in right:
+            if i == 7:
+                current_line
+                code += str(codes_right[tuple(current_line)])
+                current_line = [line]
+                i =+ line[0]
+                
+            else:
+                current_line.append(line)
+                i += line[0]
+                
+        code += str(codes_right[tuple(current_line)])
+    
 
 
         current_line= []
