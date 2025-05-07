@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageEnhance
 
 
 class BarcodeReader:
-    def __init__(self):        
+    def __init__(self ,img=None):        
 
         number = randint(1, 3)
     
@@ -18,13 +18,17 @@ class BarcodeReader:
         #     case _:
         #         barcode_img = Image.open('barcode_image_test_3.png').convert('L')
         
+        if img == None:
+            barcode_img = Image.open('barcode_image_test_1.png').convert('L')
+        else:
+            barcode_img = img.convert('L')
 
-        barcode_img = Image.open('barcode_image_test_1.png').convert('L')
+
         threshold = 128
         self.barcode_img = barcode_img.point(lambda x: 255 if x > threshold else 0, '1')
         # enhancer = ImageEnhance.Contrast(barcode_img)
         # self.barcode_img = enhancer.enhance(3)
-        self.barcode_img.show()
+        # self.barcode_img.show()
 
         self.read_image()
         self.read_barcode(barcode_img)
@@ -131,8 +135,10 @@ class BarcodeReader:
             accuarcy_error = 20
         elif self.dimensions[0] > 2000:
             accuarcy_error = 10
+        elif self.dimensions[0] > 1500:
+            accuarcy_error = 7
         elif self.dimensions[0] > 1000:
-            accuarcy_error = 5
+            accuarcy_error = 4
         elif self.dimensions[0] > 700:
             accuarcy_error = 3
         else:
@@ -140,10 +146,7 @@ class BarcodeReader:
 
 
         for x in range(self.dimensions[0]):
-            print(self.pixels[x, self.dimensions[1]/2 ])
-
-
-
+            
             if self.pixels[x, self.dimensions[1]/2 ] == 0:
                 if self.pixels[x, self.dimensions[1]/2 + 1 ] == 0 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 0:
                     black_line.append(x)
@@ -207,8 +210,7 @@ class BarcodeReader:
             accuarcy_error = 2
 
         for x in range(self.dimensions[0]):
-            print(self.pixels[x, self.dimensions[1]/2 ])
-
+           
             if self.pixels[x, self.dimensions[1]/2 ] == 0:
                 if self.pixels[x, self.dimensions[1]/2 + 1 ] == 0 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 0:
                     black_line.append(x)
@@ -322,10 +324,6 @@ class BarcodeReader:
         
         check_digit = (10 - (modulo)) % 10
 
-        print(check_digit)
-
-        print(code[11])
-
         if str(check_digit) == code[11]:
             return True
         
@@ -405,7 +403,7 @@ class BarcodeReader:
             print(f"{e} - Couldn't decode right side")
             exit()
 
-            
+
         current_line= []
 
         
