@@ -1,6 +1,7 @@
 from logic import BarcodeReader
 from PIL import Image
 import unittest
+from gui import GUI
 
 
 class TestBarcode(unittest.TestCase):
@@ -63,9 +64,8 @@ if __name__ == '__main__':
 
     if result.wasSuccessful():
         print("All tests passed!")
-        img = Image.open('barcode_image_test_4.png')
-        barcode_reader = BarcodeReader(img)
-        print(barcode_reader.read_barcode())
+        gui = GUI()
+    
     else:
         print("Some tests failed.")
         if result.failures:

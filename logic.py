@@ -93,8 +93,6 @@ class BarcodeReader:
                     current_line_list = []
                     line_switch = True
        
-        if not self.test:
-            self.plain_barcode_img.show()
         return self.sort_barcode_list(barcode_lines)
 
 
