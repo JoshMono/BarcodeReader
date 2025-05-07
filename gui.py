@@ -34,9 +34,10 @@ class GUI:
             self.image = self.resize_image_preserving_aspect_ratio(image, label_width, label_height)
             
             
-            photo = ImageTk.PhotoImage(self.image)
+            self.plain_photo = ImageTk.PhotoImage(self.image)
 
-            self.img_widget.config(image=photo)
+            self.img_widget.config(image=self.plain_photo)
+            self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
 
     def run_barcode_scan(self):
         if self.img_widget.cget("image") != None and self.image != None:
@@ -46,6 +47,7 @@ class GUI:
 
             self.photo = ImageTk.PhotoImage(barcode_reader.plain_barcode_img)
             self.img_widget.config(image=self.photo)
+            self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
 
     def __init__(self):
         self.root = Tk()

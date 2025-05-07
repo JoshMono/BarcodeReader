@@ -1,5 +1,3 @@
-import barcode
-from barcode.writer import ImageWriter
 from random import randint
 from PIL import Image, ImageDraw, ImageEnhance
 
