@@ -4,18 +4,18 @@ from PIL import Image, ImageDraw, ImageEnhance
 
 
 class BarcodeReader:
-    def __init__(self ,img=None, test=False):        
+    def __init__(self ,file_path=None, test=False):        
 
         self.test = test
     
-        if img == None:
+        if file_path == None:
             self.plain_barcode_img = Image.open('barcode_image_test_2.png').convert('RGB')
             self.barcode_img = Image.open('barcode_image_test_2.png').convert('L')
         else:
-            self.plain_barcode_img = img.convert('RGB')
-            self.barcode_img = img.convert('L')
+            self.plain_barcode_img = Image.open(file_path).convert('RGB')
+            self.barcode_img = Image.open(file_path).convert('L')
 
-        threshold = 200
+        threshold = 120
         self.barcode_img = self.barcode_img.point(lambda x: 255 if x > threshold else 0, 'L')
 
         self.read_image()
@@ -41,11 +41,11 @@ class BarcodeReader:
        
         starting_index = start_pixels[0][0]
         ending_index = end_pixels[0][0]
-        scale = self.get_scale(start_pixels)
+        scale = self.get_scale(start_pixels, end_pixels)
     
         barcode_lines = []
         current_line_list = []
-        current_line_positions = []
+        
 
         line_switch = False
         
@@ -122,12 +122,14 @@ class BarcodeReader:
         elif self.dimensions[0] > 1000:
             accuarcy_error = 4
         elif self.dimensions[0] > 700:
-            accuarcy_error = 3
+            accuarcy_error = 2
         else:
             accuarcy_error = 2
 
+        draw = ImageDraw.Draw(self.plain_barcode_img)
 
         for x in range(self.dimensions[0]):
+            draw.line((0, self.dimensions[1]/2, x, self.dimensions[1]/2), fill="yellow", width=3)
             
             if self.pixels[x, self.dimensions[1]/2 ] == 0:
                 if self.pixels[x, self.dimensions[1]/2 + 1 ] == 0 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 0:
@@ -174,14 +176,17 @@ class BarcodeReader:
 
 
     def get_end(self):
-        self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+        self.barcode_img = self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+        self.plain_barcode_img = self.plain_barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
         line_index = 0
         pixel_list = []
         black_line = []
         white_line = []
 
+        pixels = self.barcode_img.load()
+
         if self.dimensions[0] > 4000:
-            accuarcy_error = 15
+            accuarcy_error = 5
         elif self.dimensions[0] > 2000:
             accuarcy_error = 10
         elif self.dimensions[0] > 1500:
@@ -193,23 +198,25 @@ class BarcodeReader:
         else:
             accuarcy_error = 2
 
+        draw = ImageDraw.Draw(self.plain_barcode_img)
+
         for x in range(self.dimensions[0]):
-           
-            if self.pixels[x, self.dimensions[1]/2 ] == 0:
-                if self.pixels[x, self.dimensions[1]/2 + 1 ] == 0 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 0:
+            draw.line((0, self.dimensions[1]/2, x, self.dimensions[1]/2), fill="yellow", width=3)
+            if pixels[x, self.dimensions[1]/2 ] == 0:
+                if pixels[x, self.dimensions[1]/2 + 1 ] == 0 and pixels[x, self.dimensions[1]/2 - 1 ] == 0:
                     black_line.append(x)
                     white_line = []
-                elif self.pixels[x, self.dimensions[1]/2 + 1 ] == 255 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 255:
+                elif pixels[x, self.dimensions[1]/2 + 1 ] == 255 and pixels[x, self.dimensions[1]/2 - 1 ] == 255:
                     white_line.append(x)
                     black_line = []
                 else:
                     black_line.append(x)
                     white_line = []
             else:
-                if self.pixels[x, self.dimensions[1]/2 + 1 ] == 255 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 255:
+                if pixels[x, self.dimensions[1]/2 + 1 ] == 255 and pixels[x, self.dimensions[1]/2 - 1 ] == 255:
                     white_line.append(x)
                     black_line = []
-                elif self.pixels[x, self.dimensions[1]/2 + 1 ] == 0 and self.pixels[x, self.dimensions[1]/2 - 1 ] == 0:
+                elif pixels[x, self.dimensions[1]/2 + 1 ] == 0 and pixels[x, self.dimensions[1]/2 - 1 ] == 0:
                     black_line.append(x)
                     white_line = []
                 else:
@@ -217,7 +224,7 @@ class BarcodeReader:
                     black_line = []
 
 
-            if self.pixels[x, self.dimensions[1]/2 ] == 0 and len(black_line) >= accuarcy_error:
+            if pixels[x, self.dimensions[1]/2 ] == 0 and len(black_line) >= accuarcy_error:
                 
                 if line_index == 0 or line_index == 2:
                     line_index += 1
@@ -226,7 +233,7 @@ class BarcodeReader:
                 else:
                     pixel_list.append((x, 0))
                 
-            elif self.pixels[x, self.dimensions[1]/2] == 255 and line_index != 0 and len(white_line) >= accuarcy_error:
+            elif pixels[x, self.dimensions[1]/2] == 255 and line_index != 0 and len(white_line) >= accuarcy_error:
                 
                 if line_index == 1:
                     line_index +=1
@@ -234,9 +241,9 @@ class BarcodeReader:
                         pixel_list.append((line, 255))
                 elif line_index == 3:
                     break
-                else:
-                    pixel_list.append((x, 255))
-        self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+                
+        self.barcode_img = self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+        self.plain_barcode_img = self.plain_barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
         return pixel_list
 
 
@@ -250,8 +257,8 @@ class BarcodeReader:
 
 
     @staticmethod
-    def get_scale(pixel_list):
-        return (round(len(pixel_list) / 3))
+    def get_scale(pixel_list_left, pixel_list_right):
+        return (round((round(len(pixel_list_left) / 3) + round(len(pixel_list_right) / 3)) / 2))
     
 
 

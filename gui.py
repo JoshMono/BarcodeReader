@@ -25,12 +25,12 @@ class GUI:
         return image
 
     def load_image(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png")])
+        self.file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png")])
 
-        if file_path:
+        if self.file_path:
             label_width = self.img_widget.winfo_width()
             label_height = self.img_widget.winfo_height()
-            image = Image.open(file_path).convert("RGB")
+            image = Image.open(self.file_path).convert("RGB")
             self.image = self.resize_image_preserving_aspect_ratio(image, label_width, label_height)
             
             
@@ -41,11 +41,16 @@ class GUI:
 
     def run_barcode_scan(self):
         if self.img_widget.cget("image") != None and self.image != None:
-            barcode_reader = BarcodeReader(self.image)
+            barcode_reader = BarcodeReader(self.file_path)
 
             self.code_label.config(text=f"Code: {barcode_reader.read_barcode()}")
 
-            self.photo = ImageTk.PhotoImage(barcode_reader.plain_barcode_img)
+            label_width = self.img_widget.winfo_width()
+            label_height = self.img_widget.winfo_height()
+            image = Image.open(self.file_path).convert("RGB")
+            self.image = self.resize_image_preserving_aspect_ratio(barcode_reader.plain_barcode_img, label_width, label_height)
+
+            self.photo = ImageTk.PhotoImage(self.image)
             self.img_widget.config(image=self.photo)
             self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
 

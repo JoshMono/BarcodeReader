@@ -6,50 +6,49 @@ from gui import GUI
 
 class TestBarcode(unittest.TestCase):
     def test_validate_low_dimensions(self):
-        img = Image.open('barcode_image_test_1.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_1.png', True)
 
         if barcode_reader.read_barcode() == False:
             self.fail()
 
     def test_validate_medium_dimensions(self):
-        img = Image.open('barcode_image_test_2.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_2.png', True)
     
         if barcode_reader.read_barcode() == False:
             self.fail()
 
     def test_validate_high_dimensions(self):
-        img = Image.open('barcode_image_test_3.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_3.png', True)
         
         if barcode_reader.read_barcode() == False:
             self.fail()
 
     def test_validate_transparent_background(self):
-        img = Image.open('barcode_image_test_4.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_4.png', True)
         
         if barcode_reader.read_barcode() == False:
             self.fail()
 
     def test_validate_different_colours(self):
-        img = Image.open('barcode_image_test_5.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_5.png', True)
         print(barcode_reader.read_barcode())
         if barcode_reader.read_barcode() == False:
             self.fail()
 
     def test_validate_gradient(self):
-        img = Image.open('barcode_image_test_6.png')
-        barcode_reader = BarcodeReader(img, True)
+        barcode_reader = BarcodeReader('barcode_image_test_6.png', True)
         
         if barcode_reader.read_barcode() == False:
             self.fail()
 
-    def test_validate_gray(self):
-        img = Image.open('barcode_image_test_7.png')
-        barcode_reader = BarcodeReader(img, True)
+    def test_validate_hand_photo(self):
+        barcode_reader = BarcodeReader('barcode_image_test_7.png', True)
+        
+        if barcode_reader.read_barcode() == False:
+            self.fail()
+
+    def test_validate_color_hand_photo(self):
+        barcode_reader = BarcodeReader('barcode_image_test_8.png', True)
         
         if barcode_reader.read_barcode() == False:
             self.fail()
