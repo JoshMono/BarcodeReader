@@ -10,15 +10,18 @@ class BarcodeReader:
     
         if file_path == None:
             self.plain_barcode_img = Image.open('barcode_image_test_2.png').convert('RGB')
-            self.barcode_img = Image.open('barcode_image_test_2.png').convert('L')
+            self.barcode_img_normal = Image.open('barcode_image_test_2.png').convert('L')
         else:
             self.plain_barcode_img = Image.open(file_path).convert('RGB')
-            self.barcode_img = Image.open(file_path).convert('L')
+            self.barcode_img_normal = Image.open(file_path).convert('L')
 
         threshold = 120
-        self.barcode_img = self.barcode_img.point(lambda x: 255 if x > threshold else 0, 'L')
+        self.barcode_img_normal = self.barcode_img_normal.point(lambda x: 255 if x > threshold else 0, 'L')
 
-        self.read_image()
+        # self.barcode_img.show()
+        self.pixels = self.barcode_img_normal.load()
+        self.dimensions = self.barcode_img_normal.size
+        # self.read_image()
 
         
 
@@ -28,6 +31,16 @@ class BarcodeReader:
         
 
 
+    def run_barcode(self):
+        self.search_barcodes()
+        if self.barcode_img_list != []:
+            for barcode in self.barcode_img_list:
+                self.barcode_img = self.barcode_img_normal.crop((barcode[0], barcode[1], barcode[2], barcode[3]))
+                self.read_image()
+                self.barcode_img.show()
+                print(self.read_barcode())
+
+
 
     ###
     ### Reads the barcodes lines
@@ -35,6 +48,7 @@ class BarcodeReader:
 
 
     def read_barcode(self):
+        
         start_pixels = self.get_start()
         end_pixels = self.get_end()
 
@@ -50,14 +64,15 @@ class BarcodeReader:
         line_switch = False
         
         # while len(barcode_lines) != 89:
+        self.plain_barcode_img = self.barcode_img
         draw = ImageDraw.Draw(self.plain_barcode_img)
    
         for x in range(starting_index + (scale * 3), self.dimensions[0] - ending_index - (scale * 3)):
             
             if self.pixels[x, self.dimensions[1]/2 ] == 0:
                 if line_switch:
-                    if len(current_line_list) > round(scale * .75):
-                        barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 255))
+                    if len(current_line_list) > round(scale * .7):
+                        barcode_lines.append((1, 255))
                         draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="blue", width=3)
                     current_line_list = []
                     line_switch = False
@@ -75,8 +90,8 @@ class BarcodeReader:
             elif self.pixels[x, self.dimensions[1]/2] == 255:
                 
                 if not line_switch:
-                    if len(current_line_list) > round(scale * .75):
-                        barcode_lines.append(((round(len(current_line_list)/round(scale * .75))), 0))
+                    if len(current_line_list) > round(scale * .7):
+                        barcode_lines.append((1, 0))
                         draw.line((current_line_list[0], self.dimensions[1]/2, current_line_list[len(current_line_list) - 1], self.dimensions[1]/2), fill="red", width=3)
                     current_line_list = []
                     line_switch = True
@@ -90,12 +105,12 @@ class BarcodeReader:
                     barcode_lines.append(((round(len(current_line_list)/scale)), 255))
                     current_line_list = []
                     line_switch = True
-       
+
+        self.plain_barcode_img.show()
         return self.sort_barcode_list(barcode_lines)
 
 
-
-
+    
 
 
 
@@ -103,7 +118,90 @@ class BarcodeReader:
     ### Gets starting lines
     ###
 
+    def search_barcodes(self):
+        self.barcode_img_list = []
+        intercept_line = False
+        for y in range(round((self.dimensions[1]))):
+            for x in range(self.dimensions[0]):
 
+                if self.barcode_img_list != []:
+                    for barcode in self.barcode_img_list:
+                        if (barcode[0] <= x < barcode[2]) and (barcode[1] <= y < barcode[3]):
+                            intercept_line = True
+                            continue
+                    if intercept_line:
+                        intercept_line = False
+                        continue
+                    
+
+
+                if self.pixels[x, y] == 0:
+                    line = True
+                    for i in range(round(self.dimensions[1] / 10)):
+                        if self.dimensions[1] != y+i: 
+                            if self.pixels[x, y + i] == 255:
+                                line = False
+                                break
+                        else:
+                            line = False
+                    if line:
+                        self.get_barcode(x, y)
+
+    
+    def get_barcode(self, x, y):
+        barcode_cordinates = []
+        i = 0
+        while self.pixels[x, y - i] == 0: 
+            if 0 != y-i:
+                i += 1
+            else:
+                break
+
+        barcode_cordinates.append((x - 1, y - i))
+        
+        i = 0
+        while self.pixels[x, y + i] == 0: 
+            if self.dimensions[1] != y+i:
+                i += 1
+            else:
+                break
+
+        barcode_cordinates.append((x - 1, y + i + 5))
+
+        mid_point = round((barcode_cordinates[1][1] - barcode_cordinates[0][1]) / 2)
+
+        i = 0
+        while self.pixels[x+i, y + mid_point] == 0: 
+            if self.dimensions[0] != x+i:
+                i += 1
+            else:
+                break
+
+        scale = (x+i) - (barcode_cordinates[0][0] + 1)
+    
+        i = scale - 1
+        white_lines = []
+        while len(white_lines) < 9:
+            if self.dimensions[0] > x+i:
+                    
+                if self.pixels[x + i, y + mid_point] == 255:
+                    white_lines.append((x + i, y))
+                else:
+                    white_lines = []
+                i += scale
+            else:
+                break
+        if white_lines == []:
+            barcode_cordinates.append((x + i, y + mid_point))
+        else:
+            barcode_cordinates.append((white_lines[0][0] + 1, y + mid_point))
+        
+        self.barcode_img_list.append((barcode_cordinates[0][0], barcode_cordinates[0][1], barcode_cordinates[2][0], barcode_cordinates[1][1]))
+
+        
+
+
+        
 
 
     def get_start(self):
@@ -124,7 +222,7 @@ class BarcodeReader:
         elif self.dimensions[0] > 700:
             accuarcy_error = 2
         else:
-            accuarcy_error = 2
+            accuarcy_error = 1
 
         draw = ImageDraw.Draw(self.plain_barcode_img)
 

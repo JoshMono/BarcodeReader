@@ -43,7 +43,7 @@ class GUI:
         if self.img_widget.cget("image") != None and self.image != None:
             barcode_reader = BarcodeReader(self.file_path)
 
-            self.code_label.config(text=f"Code: {barcode_reader.read_barcode()}")
+            self.code_label.config(text=f"Code: {barcode_reader.run_barcode()}")
 
             label_width = self.img_widget.winfo_width()
             label_height = self.img_widget.winfo_height()
