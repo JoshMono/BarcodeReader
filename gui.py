@@ -42,8 +42,11 @@ class GUI:
     def run_barcode_scan(self):
         if self.img_widget.cget("image") != None and self.image != None:
             barcode_reader = BarcodeReader(self.file_path)
-
-            self.code_label.config(text=f"Code: {barcode_reader.run_barcode()}")
+            text = "Codes: "
+            all_codes = barcode_reader.run_barcode()
+            for code in all_codes:
+                text += f"\n{code}"
+            self.code_label.config(text=text)
 
             label_width = self.img_widget.winfo_width()
             label_height = self.img_widget.winfo_height()
@@ -65,7 +68,7 @@ class GUI:
 
         heading = Label(mainFrame, text="UPC-A Barcode Reader", bg="gray88", font=("Arial", 20))
         self.img_widget = Label(mainFrame, bg="gray88")
-        self.code_label = Label(mainFrame, text="Code: ", bg="gray88", font=("Arial", 12), anchor="w")
+        self.code_label = Label(mainFrame, text="Code: ", bg="gray88", font=("Arial", 12), anchor="n")
 
         select_image_btn = Button(mainFrame, text="Select Image", command=lambda: self.load_image())
         get_code_btn = Button(mainFrame, text="Get Code", command=lambda: self.run_barcode_scan())
@@ -74,7 +77,7 @@ class GUI:
         self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
         select_image_btn.place(relx=0.3, rely=0.9, relwidth=0.15, relheight=0.08)
         get_code_btn.place(relx=0.5, rely=0.9, relwidth=0.15, relheight=0.08)
-        self.code_label.place(relx=0.05, rely=0.77, relwidth=0.2, relheight=0.06)
+        self.code_label.place(relx=0.05, rely=0.77, relwidth=0.2, relheight=0.15)
         
         self.root.mainloop()
     
