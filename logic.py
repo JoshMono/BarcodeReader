@@ -38,7 +38,6 @@ class BarcodeReader:
             for barcode in self.barcode_img_list:
                 self.barcode_img = self.barcode_img_normal.crop((barcode[0], barcode[1], barcode[2], barcode[3]))
                 self.read_image()
-                self.barcode_img.show()
                 all_codes.append(self.read_barcode())
 
         return all_codes
@@ -108,8 +107,8 @@ class BarcodeReader:
                     barcode_lines.append(((round(len(current_line_list)/scale)), 255))
                     current_line_list = []
                     line_switch = True
-
-        # self.plain_barcode_img.show()
+        if not self.test:
+            self.plain_barcode_img.show()
         return self.sort_barcode_list(barcode_lines)
 
 
@@ -124,9 +123,9 @@ class BarcodeReader:
     def search_barcodes(self):
         self.barcode_img_list = []
         intercept_line = False
-        y_sections = (self.dimensions[1] - 1) / 5
+        y_sections = (self.dimensions[1] - 1) / 15
         for x in range(self.dimensions[0]):
-            for y_ in range(5):
+            for y_ in range(15):
                 y = int(y_sections * y_)
                 if self.barcode_img_list != []:
                     for barcode in self.barcode_img_list:
@@ -141,7 +140,8 @@ class BarcodeReader:
 
                 if self.pixels[x, y] == 0:
                     line = True
-                    for i in range(round(self.dimensions[1] / 7)):
+                    # new_x = x + 1
+                    for i in range(round(80)):
                         if self.dimensions[1] != y+i: 
                             if self.pixels[x, y + i] == 255:
                                 line = False
