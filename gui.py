@@ -42,12 +42,16 @@ class GUI:
     def run_barcode_scan(self):
         if self.img_widget.cget("image") != None and self.image != None:
             barcode_reader = BarcodeReader(self.file_path)
-            text = "Codes: "
-            all_codes = barcode_reader.run_barcode()
-            for code in all_codes:
-                text += f"\n{code}"
-            self.code_label.config(text=text)
+            all_codes_and_images = barcode_reader.run_barcode()
 
+            self.code_label.config(state=NORMAL)  
+            self.code_label.delete('1.0', 'end')  
+            self.code_label.insert('1.0', "Code:\n")  
+
+            for code in all_codes_and_images:
+                self.add_code_with_image(code[0], code[1])
+
+            self.code_label.config(state=DISABLED)
             label_width = self.img_widget.winfo_width()
             label_height = self.img_widget.winfo_height()
             image = Image.open(self.file_path).convert("RGB")
@@ -56,6 +60,19 @@ class GUI:
             self.photo = ImageTk.PhotoImage(self.image)
             self.img_widget.config(image=self.photo)
             self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
+
+    def add_code_with_image(self, display_text, image_obj):
+        start_index = self.code_label.index("end-1c") 
+        self.code_label.insert("end", display_text + "\n")
+        end_index = self.code_label.index("end-1c") 
+
+        tag_name = f"image_link_{display_text}"
+
+        self.code_label.tag_add(tag_name, start_index, end_index)
+        self.code_label.tag_config(tag_name, foreground="blue", underline=True)
+        self.code_label.tag_bind(tag_name, "<Button-1>", lambda event, img=image_obj: img.show())
+
+        
 
     def __init__(self):
         self.root = Tk()
@@ -68,8 +85,8 @@ class GUI:
 
         heading = Label(mainFrame, text="UPC-A Barcode Reader", bg="gray88", font=("Arial", 20))
         self.img_widget = Label(mainFrame, bg="gray88")
-        self.code_label = Label(mainFrame, text="Code: ", bg="gray88", font=("Arial", 12), anchor="n")
-
+        self.code_label = Text(mainFrame, bg="gray88", font=("Arial", 12))
+        self.code_label.insert('1.0', "Code: \n")
         select_image_btn = Button(mainFrame, text="Select Image", command=lambda: self.load_image())
         get_code_btn = Button(mainFrame, text="Get Code", command=lambda: self.run_barcode_scan())
 

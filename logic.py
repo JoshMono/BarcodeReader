@@ -33,14 +33,14 @@ class BarcodeReader:
 
     def run_barcode(self):
         self.search_barcodes()
-        all_codes = []
+        all_codes_iamges = []
         if self.barcode_img_list != []:
             for barcode in self.barcode_img_list:
                 self.barcode_img = self.barcode_img_normal.crop((barcode[0], barcode[1], barcode[2], barcode[3]))
                 self.read_image()
-                all_codes.append(self.read_barcode())
+                all_codes_iamges.append((self.read_barcode(), self.plain_barcode_img))
 
-        return all_codes
+        return all_codes_iamges
 
 
 
@@ -107,8 +107,6 @@ class BarcodeReader:
                     barcode_lines.append(((round(len(current_line_list)/scale)), 255))
                     current_line_list = []
                     line_switch = True
-        if not self.test:
-            self.plain_barcode_img.show()
         return self.sort_barcode_list(barcode_lines)
 
 
