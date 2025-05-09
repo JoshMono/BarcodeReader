@@ -55,9 +55,6 @@ class TestBarcode(unittest.TestCase):
             self.fail()
         
 if __name__ == '__main__':
-    
-    # gui = GUI()
-
     runner = unittest.TextTestRunner()
     program = unittest.main(testRunner=runner, exit=False)
 

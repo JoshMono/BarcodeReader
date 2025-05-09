@@ -47,26 +47,27 @@ class GUI:
             self.code_label.config(state=NORMAL)  
             self.code_label.delete('1.0', 'end')  
             self.code_label.insert('1.0', "Code:\n")  
-
+            i = 0
             for code in all_codes_and_images:
-                self.add_code_with_image(code[0], code[1])
+                self.add_code_with_image(code[0], code[1], i)
+                i += 1
 
             self.code_label.config(state=DISABLED)
-            label_width = self.img_widget.winfo_width()
-            label_height = self.img_widget.winfo_height()
-            image = Image.open(self.file_path).convert("RGB")
-            self.image = self.resize_image_preserving_aspect_ratio(barcode_reader.plain_barcode_img, label_width, label_height)
+            # label_width = self.img_widget.winfo_width()
+            # label_height = self.img_widget.winfo_height()
+            # image = Image.open(self.file_path).convert("RGB")
+            # self.image = self.resize_image_preserving_aspect_ratio(barcode_reader.plain_barcode_img, label_width, label_height)
 
-            self.photo = ImageTk.PhotoImage(self.image)
-            self.img_widget.config(image=self.photo)
-            self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
+            # self.photo = ImageTk.PhotoImage(self.image)
+            # self.img_widget.config(image=self.photo)
+            # self.img_widget.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.6)
 
-    def add_code_with_image(self, display_text, image_obj):
+    def add_code_with_image(self, display_text, image_obj, i):
         start_index = self.code_label.index("end-1c") 
         self.code_label.insert("end", display_text + "\n")
         end_index = self.code_label.index("end-1c") 
 
-        tag_name = f"image_link_{display_text}"
+        tag_name = f"image_link_{display_text}_{i}"
 
         self.code_label.tag_add(tag_name, start_index, end_index)
         self.code_label.tag_config(tag_name, foreground="blue", underline=True)

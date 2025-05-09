@@ -18,10 +18,8 @@ class BarcodeReader:
         threshold = 120
         self.barcode_img_normal = self.barcode_img_normal.point(lambda x: 255 if x > threshold else 0, 'L')
 
-        # self.barcode_img.show()
         self.pixels = self.barcode_img_normal.load()
         self.dimensions = self.barcode_img_normal.size
-        # self.read_image()
 
         
 
@@ -37,8 +35,9 @@ class BarcodeReader:
         if self.barcode_img_list != []:
             for barcode in self.barcode_img_list:
                 self.barcode_img = self.barcode_img_normal.crop((barcode[0], barcode[1], barcode[2], barcode[3]))
+                self.plain_barcode = self.plain_barcode_img.crop((barcode[0], barcode[1], barcode[2], barcode[3]))
                 self.read_image()
-                all_codes_iamges.append((self.read_barcode(), self.plain_barcode_img))
+                all_codes_iamges.append((self.read_barcode(), self.plain_barcode))
 
         return all_codes_iamges
 
@@ -65,9 +64,7 @@ class BarcodeReader:
 
         line_switch = False
         
-        # while len(barcode_lines) != 89:
-        self.plain_barcode_img = self.barcode_img
-        draw = ImageDraw.Draw(self.plain_barcode_img)
+        draw = ImageDraw.Draw(self.plain_barcode)
    
         for x in range(starting_index + (scale * 3), self.dimensions[0] - ending_index - (scale * 3)):
             
@@ -138,7 +135,6 @@ class BarcodeReader:
 
                 if self.pixels[x, y] == 0:
                     line = True
-                    # new_x = x + 1
                     for i in range(round(80)):
                         if self.dimensions[1] != y+i: 
                             if self.pixels[x, y + i] == 255:
@@ -147,8 +143,6 @@ class BarcodeReader:
                         else:
                             line = False
                     if line:
-                        print(x)
-                        print(y)
                         self.get_barcode(x, y)
 
     
@@ -228,7 +222,7 @@ class BarcodeReader:
         else:
             accuarcy_error = 1
 
-        draw = ImageDraw.Draw(self.plain_barcode_img)
+        draw = ImageDraw.Draw(self.plain_barcode)
 
         for x in range(self.dimensions[0]):
             draw.line((0, self.dimensions[1]/2, x, self.dimensions[1]/2), fill="yellow", width=3)
@@ -279,7 +273,7 @@ class BarcodeReader:
 
     def get_end(self):
         self.barcode_img = self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
-        self.plain_barcode_img = self.plain_barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+        self.plain_barcode = self.plain_barcode.transpose(Image.FLIP_LEFT_RIGHT)
         line_index = 0
         pixel_list = []
         black_line = []
@@ -300,7 +294,7 @@ class BarcodeReader:
         else:
             accuarcy_error = 2
 
-        draw = ImageDraw.Draw(self.plain_barcode_img)
+        draw = ImageDraw.Draw(self.plain_barcode)
 
         for x in range(self.dimensions[0]):
             draw.line((0, self.dimensions[1]/2, x, self.dimensions[1]/2), fill="yellow", width=3)
@@ -345,7 +339,7 @@ class BarcodeReader:
                     break
                 
         self.barcode_img = self.barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
-        self.plain_barcode_img = self.plain_barcode_img.transpose(Image.FLIP_LEFT_RIGHT)
+        self.plain_barcode = self.plain_barcode.transpose(Image.FLIP_LEFT_RIGHT)
         return pixel_list
 
 
